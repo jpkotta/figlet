@@ -1,5 +1,6 @@
 ;;; figlet.el --- Annoy people with big, ascii art text
 
+;; Copyright (C) 2014 Aurelien Aptel <aurelien.aptel@gmail.com>
 ;; Copyright (C) 2008 Philip Jackson
 
 ;; Author: Philip Jackson <phil@shellarchive.co.uk>
@@ -37,26 +38,25 @@
 (defvar figlet-fonts '())
 (defvar figlet-default-font "small"
   "Default font to use when none is supplied.")
-(defvar figlet-fonts-dir-candidates
-  '("/usr/share/figlet"
-    "/usr/local/share/figlet")
-  "List of directories which are to be searched for fonts.")
 (defvar figlet-options '()
   "List of options for the figlet call.")
+(defvar figlet-font-directory nil
+  "Figlet default font directory")
+
+(defun figlet-get-font-dir ()
+  "Return default font directory."
+  (or figlet-font-directory
+      (setq figlet-font-directory
+            (let ((s (shell-command-to-string "figlet -I2")))
+              (substring s 0 (1- (length s)))))))
 
 (defun figlet-get-font-list ()
-  "Get a list of potential figlet fonts by testing each directory
-in `figlet-fonts-dir-candidates'"
-  (if (null figlet-fonts)
+  "Get a list of figlet fonts."
+  (or figlet-fonts
       (setq figlet-fonts
-            (catch 'found
-              (mapc (lambda (d)
-                      (let ((default-directory d)
-                            (fonts (directory-files d nil "^[^.].+\.flf$")))
-                        (when (length fonts)
-                          (throw 'found fonts))))
-                    figlet-fonts-dir-candidates)))
-      figlet-fonts))
+            (mapcar (lambda (f)
+                      (replace-regexp-in-string "\\.flf$" "" f))
+                    (directory-files (figlet-get-font-dir) nil "^[^.].+\\.flf$")))))
 
 ;;;###autoload
 (defun figlet (string)
@@ -118,7 +118,7 @@ result (using `comment-region')"
   (mapconcat (lambda (x)
                (let ((figlet-default-font x))
                  (insert (concat x ":\n"))
-                 (figlet (or text (replace-regexp-in-string "\.flf$" "" x)))))
+                 (figlet (or text x))))
              (figlet-get-font-list)
              "\n"))
 
