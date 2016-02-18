@@ -72,9 +72,9 @@ point. Use a prefix arg to be promted for a font."
                    figlet-default-font)))
     (insert
      (with-temp-buffer
-       (call-process "figlet" nil t t
-                     (mapconcat 'identity figlet-options " ")
-                     "-f" font string)
+       (apply #'call-process (append '("figlet" nil t t)
+                                     figlet-options
+                                     `("-f" ,font ,string)))
        (goto-char (point-min))
        (re-search-forward "^." nil t)
        (delete-region (point-min) (point-at-bol))
