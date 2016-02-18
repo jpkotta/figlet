@@ -39,7 +39,8 @@
 (defvar figlet-default-font "small"
   "Default font to use when none is supplied.")
 (defvar figlet-options '()
-  "List of options for the figlet call.")
+  "List of options for the figlet call.
+This is a list of strings, e.g. '(\"-k\").")
 (defvar figlet-font-directory nil
   "Figlet default font directory")
 
